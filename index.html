@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Решалкин</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FFFFFF;
+  --text: #1A1A1A;
+  --text-secondary: #6B7280;
+  --border: #E5E7EB;
+  --accent: #2563EB;
+  --accent-light: #EFF6FF;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  --card-hover: 0 4px 12px rgba(0,0,0,0.1);
+  --radius: 16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: #F3F4F6;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Phone frame — visible only on desktop */
+.phone-frame {
+  width: 100%;
+  max-width: 390px;
+  min-height: 100vh;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 500px) {
+  body { padding: 24px 0; align-items: center; }
+  .phone-frame {
+    min-height: 844px;
+    max-height: 844px;
+    border-radius: 44px;
+    border: 8px solid #1A1A1A;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.3), inset 0 0 0 2px #333;
+    overflow-y: auto;
+  }
+  .phone-frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 28px;
+    background: #1A1A1A;
+    border-radius: 0 0 18px 18px;
+    z-index: 100;
+  }
+}
+
+/* ===== Screens ===== */
+.screen {
+  display: none;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 0 20px;
+  padding-bottom: 80px;
+  animation: fadeIn 0.25s ease;
+}
+.screen.active { display: flex; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Header ===== */
+.header {
+  padding: 48px 0 20px;
+  text-align: center;
+}
+@media (min-width: 500px) {
+  .header { padding-top: 44px; }
+}
+.header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.header p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: 4px;
+}
+.header .greeting {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+/* ===== Feature Cards ===== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+.feature-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--card-shadow);
+}
+.feature-card:active {
+  transform: scale(0.97);
+  box-shadow: var(--card-hover);
+}
+.feature-card .icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+  display: block;
+}
+.feature-card .title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.feature-card .subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ===== Stats row ===== */
+.stats-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+.stat-card {
+  flex: 1;
+  background: var(--accent-light);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+}
+.stat-card .number {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.stat-card .label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ===== Input screen ===== */
+.screen-header {
+  display: flex;
+  align-items: center;
+  padding: 48px 0 16px;
+  gap: 12px;
+}
+@media (min-width: 500px) {
+  .screen-header { padding-top: 44px; }
+}
+.back-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text);
+  padding: 4px;
+  line-height: 1;
+}
+.screen-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.input-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+.input-area textarea {
+  width: 100%;
+  min-height: 140px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+  color: var(--text);
+  background: var(--bg);
+}
+.input-area textarea:focus {
+  border-color: var(--accent);
+}
+.input-area textarea::placeholder {
+  color: #9CA3AF;
+}
+
+.photo-upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+  position: relative;
+  overflow: hidden;
+}
+.photo-upload-zone:active { border-color: var(--accent); }
+.photo-upload-zone .upload-icon { font-size: 36px; margin-bottom: 8px; }
+.photo-upload-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.photo-preview {
+  display: none;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+.photo-preview img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+.photo-preview .remove-photo {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.submit-btn:active { transform: scale(0.98); }
+.submit-btn:disabled {
+  background: #D1D5DB;
+  cursor: not-allowed;
+}
+
+/* ===== Result screen ===== */
+.result-box {
+  background: #FAFAFA;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 1.8;
+  overflow-x: auto;
+}
+.result-box h1, .result-box h2, .result-box h3 {
+  margin: 16px 0 8px;
+  color: var(--text);
+}
+.result-box h1 { font-size: 20px; }
+.result-box h2 { font-size: 18px; }
+.result-box h3 { font-size: 16px; }
+.result-box strong { color: var(--accent); }
+.result-box .answer-block {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--accent-light);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  font-weight: 600;
+  font-size: 16px;
+}
+.result-box .step {
+  padding: 4px 12px;
+  margin: 4px 0;
+  border-left: 3px solid var(--border);
+}
+
+.katex { font-size: 1.05em; }
+.katex-display { margin: 12px 0; overflow-x: auto; }
+
+/* ===== Loading ===== */
+.loading-overlay {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+.loading-overlay.active { display: flex; }
+
+.loader {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-bottom: 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+/* ===== History ===== */
+.history-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.history-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--card-shadow);
+}
+.history-item:active { box-shadow: var(--card-hover); }
+.history-item .h-type {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.history-item .h-question {
+  font-size: 14px;
+  margin-top: 4px;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.history-item .h-date {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+.history-empty {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
+/* ===== Profile ===== */
+.profile-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  margin-top: 12px;
+  box-shadow: var(--card-shadow);
+}
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 28px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+.profile-name {
+  font-size: 20px;
+  font-weight: 600;
+}
+.profile-username {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ===== Tab Bar ===== */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 390px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding: 6px 0;
+  padding-bottom: max(6px, env(safe-area-inset-bottom));
+  z-index: 50;
+}
+@media (min-width: 500px) {
+  .tab-bar {
+    position: absolute;
+    border-radius: 0 0 36px 36px;
+  }
+}
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.tab-item.active { color: var(--accent); }
+.tab-item .tab-icon { font-size: 22px; }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- ===== HOME SCREEN ===== -->
+  <div id="screen-home" class="screen active">
+    <div class="header">
+      <div class="greeting" id="greeting">Привет!</div>
+      <h1>Решалкин</h1>
+      <p>Твой репетитор в кармане</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="number" id="stat-solved">0</div>
+        <div class="label">Решено задач</div>
+      </div>
+      <div class="stat-card">
+        <div class="number" id="stat-today">-</div>
+        <div class="label">Сегодня</div>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="feature-card" onclick="openScreen('solve-photo')">
+        <span class="icon">📸</span>
+        <div class="title">По фото</div>
+        <div class="subtitle">Сфоткай задачу</div>
+      </div>
+      <div class="feature-card" onclick="openScreen('solve-text')">
+        <span class="icon">✏️</span>
+        <div class="title">Текстом</div>
+        <div class="subtitle">Напиши условие</div>
+      </div>
+      <div class="feature-card" onclick="openScreen('check')">
+        <span class="icon">🔍</span>
+        <div class="title">Проверить</div>
+        <div class="subtitle">Проверь решение</div>
+      </div>
+      <div class="feature-card" onclick="openScreen('explain')">
+        <span class="icon">📖</span>
+        <div class="title">Тема</div>
+        <div class="subtitle">Объясни тему</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SOLVE BY PHOTO ===== -->
+  <div id="screen-solve-photo" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">&larr;</button>
+      <div class="screen-title">Решить по фото</div>
+    </div>
+    <div class="input-area">
+      <div class="photo-upload-zone" id="photo-zone">
+        <div class="upload-icon">📷</div>
+        <div>Нажми, чтобы загрузить фото</div>
+        <div style="font-size:12px; margin-top:4px; color:#9CA3AF">Чёткое фото с условием задачи</div>
+        <input type="file" accept="image/*" capture="environment" onchange="onPhotoSelected(event)">
+      </div>
+      <div class="photo-preview" id="photo-preview">
+        <img id="photo-preview-img" src="" alt="Preview">
+        <button class="remove-photo" onclick="removePhoto()">×</button>
+      </div>
+      <textarea id="photo-caption" placeholder="Дополнительный текст к фото (необязательно)..." rows="2" style="min-height: 60px"></textarea>
+      <button class="submit-btn" id="btn-solve-photo" onclick="solvePhoto()" disabled>Решить</button>
+    </div>
+    <div class="loading-overlay" id="loading-photo">
+      <div class="loader"></div>
+      <div class="loading-text">Анализирую фото и решаю...</div>
+    </div>
+  </div>
+
+  <!-- ===== SOLVE BY TEXT ===== -->
+  <div id="screen-solve-text" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">&larr;</button>
+      <div class="screen-title">Написать задачу</div>
+    </div>
+    <div class="input-area">
+      <textarea id="text-question" placeholder="Напиши условие задачи..."></textarea>
+      <button class="submit-btn" onclick="solveText()">Решить</button>
+    </div>
+    <div class="loading-overlay" id="loading-text">
+      <div class="loader"></div>
+      <div class="loading-text">Решаю...</div>
+    </div>
+  </div>
+
+  <!-- ===== CHECK SOLUTION ===== -->
+  <div id="screen-check" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">&larr;</button>
+      <div class="screen-title">Проверить решение</div>
+    </div>
+    <div class="input-area">
+      <textarea id="check-solution" placeholder="Вставь своё решение для проверки..."></textarea>
+      <button class="submit-btn" onclick="checkSolution()">Проверить</button>
+    </div>
+    <div class="loading-overlay" id="loading-check">
+      <div class="loader"></div>
+      <div class="loading-text">Проверяю...</div>
+    </div>
+  </div>
+
+  <!-- ===== EXPLAIN TOPIC ===== -->
+  <div id="screen-explain" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goHome()">&larr;</button>
+      <div class="screen-title">Объяснить тему</div>
+    </div>
+    <div class="input-area">
+      <textarea id="explain-topic" placeholder='Напиши тему, например:&#10;"Теорема Пифагора"&#10;"НЕ с причастиями"'></textarea>
+      <button class="submit-btn" onclick="explainTopic()">Объяснить</button>
+    </div>
+    <div class="loading-overlay" id="loading-explain">
+      <div class="loader"></div>
+      <div class="loading-text">Готовлю объяснение...</div>
+    </div>
+  </div>
+
+  <!-- ===== RESULT ===== -->
+  <div id="screen-result" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="goBack()">&larr;</button>
+      <div class="screen-title" id="result-title">Результат</div>
+    </div>
+    <div class="result-box" id="result-content"></div>
+  </div>
+
+  <!-- ===== HISTORY ===== -->
+  <div id="screen-history" class="screen">
+    <div class="screen-header">
+      <div class="screen-title" style="padding-left: 4px;">История</div>
+    </div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+
+  <!-- ===== PROFILE ===== -->
+  <div id="screen-profile" class="screen">
+    <div class="screen-header">
+      <div class="screen-title" style="padding-left: 4px;">Профиль</div>
+    </div>
+    <div class="profile-card">
+      <div class="profile-avatar" id="profile-avatar">?</div>
+      <div class="profile-name" id="profile-name">-</div>
+      <div class="profile-username" id="profile-username"></div>
+      <div class="stats-row" style="margin-top:16px">
+        <div class="stat-card">
+          <div class="number" id="profile-solved">0</div>
+          <div class="label">Решено задач</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB BAR ===== -->
+  <div class="tab-bar">
+    <button class="tab-item active" data-tab="home" onclick="switchTab('home')">
+      <span class="tab-icon">🏠</span>
+      Главная
+    </button>
+    <button class="tab-item" data-tab="history" onclick="switchTab('history')">
+      <span class="tab-icon">📋</span>
+      История
+    </button>
+    <button class="tab-item" data-tab="profile" onclick="switchTab('profile')">
+      <span class="tab-icon">👤</span>
+      Профиль
+    </button>
+  </div>
+
+</div>
+
+<script>
+// ===== CONFIG =====
+const API_BASE = 'https://reshalkin-api.onrender.com';
+let tg, initData = '';
+let currentScreen = 'home';
+let previousScreen = 'home';
+let selectedPhotoFile = null;
+let userData = {};
+
+// ===== TELEGRAM INIT =====
+try {
+  tg = window.Telegram && Telegram.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    initData = tg.initData || '';
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      const u = tg.initDataUnsafe.user;
+      userData = { first_name: u.first_name, username: u.username, user_id: u.id };
+    }
+  }
+} catch(e) {}
+
+// ===== API =====
+async function api(endpoint, options = {}) {
+  const headers = options.headers || {};
+  headers['X-Telegram-Init-Data'] = initData;
+  if (!initData) headers['X-Dev-User-Id'] = '783268275';
+
+  const resp = await fetch(API_BASE + endpoint, { ...options, headers });
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(err);
+  }
+  return resp.json();
+}
+
+// ===== NAVIGATION =====
+function openScreen(name) {
+  previousScreen = currentScreen;
+  showScreen(name);
+}
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const screen = document.getElementById('screen-' + name);
+  if (screen) {
+    screen.classList.add('active');
+    currentScreen = name;
+  }
+}
+
+function goHome() { showScreen('home'); updateTab('home'); }
+function goBack() { showScreen(previousScreen || 'home'); }
+
+function switchTab(tab) {
+  updateTab(tab);
+  showScreen(tab);
+  if (tab === 'history') loadHistory();
+  if (tab === 'profile') loadProfile();
+}
+
+function updateTab(tab) {
+  document.querySelectorAll('.tab-item').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+}
+
+// ===== PHOTO =====
+function onPhotoSelected(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  selectedPhotoFile = file;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById('photo-preview-img').src = ev.target.result;
+    document.getElementById('photo-preview').style.display = 'block';
+    document.getElementById('photo-zone').style.display = 'none';
+    document.getElementById('btn-solve-photo').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePhoto() {
+  selectedPhotoFile = null;
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('photo-zone').style.display = 'block';
+  document.getElementById('btn-solve-photo').disabled = true;
+  document.querySelector('#photo-zone input').value = '';
+}
+
+// ===== SOLVE PHOTO =====
+async function solvePhoto() {
+  if (!selectedPhotoFile) return;
+  toggleLoading('photo', true);
+  try {
+    const formData = new FormData();
+    formData.append('photo', selectedPhotoFile);
+    formData.append('caption', document.getElementById('photo-caption').value);
+    const data = await api('/api/solve/photo', { method: 'POST', body: formData });
+    showResult('Решение', data.answer);
+    removePhoto();
+    document.getElementById('photo-caption').value = '';
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+  }
+  toggleLoading('photo', false);
+}
+
+// ===== SOLVE TEXT =====
+async function solveText() {
+  const q = document.getElementById('text-question').value.trim();
+  if (!q) return;
+  toggleLoading('text', true);
+  try {
+    const data = await api('/api/solve/text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q }),
+    });
+    showResult('Решение', data.answer);
+    document.getElementById('text-question').value = '';
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+  }
+  toggleLoading('text', false);
+}
+
+// ===== CHECK =====
+async function checkSolution() {
+  const s = document.getElementById('check-solution').value.trim();
+  if (!s) return;
+  toggleLoading('check', true);
+  try {
+    const data = await api('/api/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ solution: s }),
+    });
+    showResult('Проверка', data.answer);
+    document.getElementById('check-solution').value = '';
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+  }
+  toggleLoading('check', false);
+}
+
+// ===== EXPLAIN =====
+async function explainTopic() {
+  const t = document.getElementById('explain-topic').value.trim();
+  if (!t) return;
+  toggleLoading('explain', true);
+  try {
+    const data = await api('/api/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: t }),
+    });
+    showResult('Объяснение', data.answer);
+    document.getElementById('explain-topic').value = '';
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+  }
+  toggleLoading('explain', false);
+}
+
+// ===== RESULT =====
+function showResult(title, answer) {
+  document.getElementById('result-title').textContent = title;
+  const el = document.getElementById('result-content');
+  el.innerHTML = renderMarkdown(answer);
+  openScreen('result');
+
+  renderMathInElement(el, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false},
+      {left: '\\(', right: '\\)', display: false},
+      {left: '\\[', right: '\\]', display: true},
+    ],
+    throwOnError: false,
+  });
+
+  updateStats();
+}
+
+function renderMarkdown(text) {
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Protect LaTeX
+  const blocks = [];
+  html = html.replace(/\$\$([\s\S]*?)\$\$/g, (m, p) => { blocks.push('$$' + p + '$$'); return '%%B' + (blocks.length-1) + '%%'; });
+  html = html.replace(/\$([^\$\n]+?)\$/g, (m, p) => { blocks.push('$' + p + '$'); return '%%B' + (blocks.length-1) + '%%'; });
+  html = html.replace(/\\\[([\s\S]*?)\\\]/g, (m, p) => { blocks.push('$$' + p + '$$'); return '%%B' + (blocks.length-1) + '%%'; });
+  html = html.replace(/\\\(([\s\S]*?)\\\)/g, (m, p) => { blocks.push('$' + p + '$'); return '%%B' + (blocks.length-1) + '%%'; });
+
+  // Markdown
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/^(📝\s*Ответ:.*)$/gm, '<div class="answer-block">$1</div>');
+  html = html.replace(/^(✅.+)$/gm, '<div class="step">$1</div>');
+  html = html.replace(/\n{2,}/g, '</p><p>');
+  html = html.replace(/\n/g, '<br>');
+  html = '<p>' + html + '</p>';
+
+  // Restore LaTeX
+  blocks.forEach((b, i) => { html = html.replace('%%B' + i + '%%', b); });
+  return html;
+}
+
+// ===== HISTORY =====
+async function loadHistory() {
+  const list = document.getElementById('history-list');
+  try {
+    const data = await api('/api/history');
+    if (!data.tasks || data.tasks.length === 0) {
+      list.innerHTML = '<div class="history-empty">Пока нет решённых задач</div>';
+      return;
+    }
+    const typeLabels = { photo: '📸 Фото', text: '✏️ Текст', check: '🔍 Проверка', explain: '📖 Тема' };
+    list.innerHTML = data.tasks.map(t => `
+      <div class="history-item" onclick="showHistoryItem(${JSON.stringify(t).replace(/"/g, '&quot;')})">
+        <div class="h-type">${typeLabels[t.request_type] || t.request_type}</div>
+        <div class="h-question">${escapeHtml(t.question_text || '').slice(0, 80)}</div>
+        <div class="h-date">${(t.created_at || '').slice(0, 16)}</div>
+      </div>
+    `).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="history-empty">Ошибка загрузки</div>';
+  }
+}
+
+function showHistoryItem(task) {
+  showResult('Задача #' + task.id, task.answer_text || 'Нет ответа');
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ===== PROFILE =====
+async function loadProfile() {
+  try {
+    const data = await api('/api/profile');
+    const name = data.first_name || 'Пользователь';
+    document.getElementById('profile-avatar').textContent = name.charAt(0).toUpperCase();
+    document.getElementById('profile-name').textContent = name;
+    document.getElementById('profile-username').textContent = data.username ? '@' + data.username : '';
+    document.getElementById('profile-solved').textContent = data.solutions_used || 0;
+  } catch(e) {}
+}
+
+// ===== STATS =====
+async function updateStats() {
+  try {
+    const data = await api('/api/profile');
+    document.getElementById('stat-solved').textContent = data.solutions_used || 0;
+    userData = data;
+  } catch(e) {}
+}
+
+// ===== LOADING =====
+function toggleLoading(screen, show) {
+  const loader = document.getElementById('loading-' + screen);
+  const parent = loader.parentElement;
+  const inputArea = parent.querySelector('.input-area');
+  if (show) {
+    if (inputArea) inputArea.style.display = 'none';
+    loader.classList.add('active');
+  } else {
+    loader.classList.remove('active');
+    if (inputArea) inputArea.style.display = 'flex';
+  }
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', function() {
+  if (userData.first_name) {
+    document.getElementById('greeting').textContent = 'Привет, ' + userData.first_name + '!';
+  }
+  updateStats();
+});
+</script>
+</body>
+</html>
