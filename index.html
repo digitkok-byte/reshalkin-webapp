@@ -673,7 +673,12 @@ async function api(endpoint, options = {}) {
   const headers = options.headers || {};
   headers['X-Telegram-Init-Data'] = initData;
 
-  const resp = await fetch(API_BASE + endpoint, { ...options, headers });
+  let resp;
+  try {
+    resp = await fetch(API_BASE + endpoint, { ...options, headers });
+  } catch(netErr) {
+    throw new Error('Сервер недоступен. Попробуй через 30 сек.');
+  }
   if (!resp.ok) {
     const err = await resp.text();
     throw new Error(err);
