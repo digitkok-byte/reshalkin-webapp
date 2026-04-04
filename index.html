@@ -324,6 +324,18 @@ body {
   border-left: 3px solid var(--border);
 }
 
+.answer-summary {
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.6;
+  text-align: center;
+}
+
 .katex { font-size: 1.05em; }
 .katex-display { margin: 12px 0; overflow-x: auto; }
 
@@ -599,6 +611,7 @@ body {
       <div class="screen-title" id="result-title">Результат</div>
     </div>
     <div class="result-box" id="result-content"></div>
+    <div class="answer-summary" id="answer-summary" style="display:none;"></div>
   </div>
 
   <!-- ===== HISTORY ===== -->
@@ -819,7 +832,21 @@ async function explainTopic() {
 function showResult(title, answer) {
   document.getElementById('result-title').textContent = title;
   const el = document.getElementById('result-content');
-  el.innerHTML = renderMarkdown(answer);
+  const summaryEl = document.getElementById('answer-summary');
+
+  // Extract "📝 Ответ: ..." line
+  const answerMatch = answer.match(/📝\s*Ответ:\s*(.+)/);
+  const cleanAnswer = answer.replace(/📝\s*Ответ:\s*.+/g, '').trim();
+
+  el.innerHTML = renderMarkdown(cleanAnswer);
+
+  if (answerMatch) {
+    summaryEl.textContent = '📝 Ответ: ' + answerMatch[1].trim();
+    summaryEl.style.display = 'block';
+  } else {
+    summaryEl.style.display = 'none';
+  }
+
   openScreen('result');
 
   renderMathInElement(el, {
@@ -828,6 +855,13 @@ function showResult(title, answer) {
       {left: '$', right: '$', display: false},
       {left: '\\(', right: '\\)', display: false},
       {left: '\\[', right: '\\]', display: true},
+    ],
+    throwOnError: false,
+  });
+  renderMathInElement(summaryEl, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false},
     ],
     throwOnError: false,
   });
