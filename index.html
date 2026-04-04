@@ -672,7 +672,6 @@ try {
 async function api(endpoint, options = {}) {
   const headers = options.headers || {};
   headers['X-Telegram-Init-Data'] = initData;
-  if (!initData) headers['X-Dev-User-Id'] = '783268275';
 
   const resp = await fetch(API_BASE + endpoint, { ...options, headers });
   if (!resp.ok) {
